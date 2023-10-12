@@ -3,7 +3,10 @@ package com.udacity.asteroidradar.main
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.udacity.asteroidradar.Asteroid
 import com.udacity.asteroidradar.R
 import com.udacity.asteroidradar.databinding.FragmentMainBinding
@@ -27,30 +30,21 @@ class MainFragment : Fragment() {
 
         binding.asteroidRecycler.adapter = adapter
 
-        /*
-        Here I will attempt to submit a dummy list to test my recycler view
-         */
-        fun generateDummyAsteroidList(): List<Asteroid> {
-            val dummyAsteroidList = mutableListOf<Asteroid>()
 
-            for (i in 1..15) {
-                val asteroid = Asteroid(
-                    id = i.toLong(),
-                    codename = "Asteroid $i",
-                    closeApproachDate = "2023-10-0$i",
-                    absoluteMagnitude = 5.0 + i.toDouble(),
-                    estimatedDiameter = 100.0 + i.toDouble(),
-                    relativeVelocity = 200.0 + i.toDouble(),
-                    distanceFromEarth = 100000.0 + i.toDouble(),
-                    isPotentiallyHazardous = i % 2 == 0
-                )
-                dummyAsteroidList.add(asteroid)
+        //observe the asteroid list from the viewModel
+        viewModel.asteroids.observe(viewLifecycleOwner, Observer {
+            adapter.submitList(it)
+        })
+
+        //observe for details navigation
+        viewModel.navigate.observe(viewLifecycleOwner, Observer {
+            if(it){
+                viewModel.selectedAsteroid.value?.let{ asteroid: Asteroid ->
+                        this.findNavController().navigate(MainFragmentDirections.actionShowDetail(asteroid))
+                        viewModel.doneNavigating()
+                }
             }
-
-            return dummyAsteroidList
-        }
-
-        adapter.submitList(generateDummyAsteroidList())
+        })
 
         setHasOptionsMenu(true)
 
