@@ -6,7 +6,13 @@ import androidx.lifecycle.ViewModel
 import com.udacity.asteroidradar.Asteroid
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
+import com.udacity.asteroidradar.Constants
+import com.udacity.asteroidradar.Constants.API_KEY
+import com.udacity.asteroidradar.PictureOfDay
+import com.udacity.asteroidradar.api.NasaApi
+import com.udacity.asteroidradar.api.NasaApiService
 import kotlinx.coroutines.launch
+import java.lang.Exception
 
 class MainViewModel : ViewModel() {
 
@@ -25,10 +31,30 @@ class MainViewModel : ViewModel() {
     val selectedAsteroid: LiveData<Asteroid>
         get() = _selectedAsteroid
 
+    private val _pictureOfTheDay = MutableLiveData<PictureOfDay>()
+
+    val pictureOfTheDay : LiveData<PictureOfDay>
+        get() = _pictureOfTheDay
+
+
     init {
         _asteroids.value = generateDummyAsteroidList()
         _navigate.value = false
+        getPictureOfTheDay()
+
     }
+
+    private fun getPictureOfTheDay() =
+        viewModelScope.launch {
+            try {
+                _pictureOfTheDay.value = NasaApi.retrofitService.getPictureOfTheDay(API_KEY)
+            }catch (e: Exception){
+                 _pictureOfTheDay.value = PictureOfDay("image", "default image", "https://i2-prod.mirror.co.uk/incoming/article9930602.ece/ALTERNATES/s1227b/Ann-Ric-Malaysia-Shortlist-Open-Nature-2017-Sony-World-Photography-Awardsjpeg.jpg")
+                //TO DO handle error
+            }
+        }
+
+
 
 
     fun onAsteroidSelect(asteroid: Asteroid){

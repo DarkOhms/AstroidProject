@@ -71,6 +71,10 @@ dependencies {
     annotationProcessor "com.github.bumptech.glide:compiler:$version_glide"
     implementation 'com.squareup.picasso:picasso:2.5.2'
 
+    //Picasso
+    implementation 'com.squareup.picasso:picasso:2.71828'
+
+
     // WorkManager
     implementation "androidx.work:work-runtime-ktx:$version_work"
 
