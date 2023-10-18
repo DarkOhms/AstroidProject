@@ -1,4 +1,3 @@
 package com.udacity.asteroidradar
 
-class AsteroidRepository {
-}
+class AsteroidRepository
