@@ -1,8 +1,10 @@
 package com.udacity.asteroidradar.main
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
@@ -11,8 +13,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.udacity.asteroidradar.Asteroid
 import com.udacity.asteroidradar.AsteroidApplication
+import com.udacity.asteroidradar.Constants
 import com.udacity.asteroidradar.R
+import com.udacity.asteroidradar.bindAsteroidStatusImage
 import com.udacity.asteroidradar.databinding.FragmentMainBinding
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.util.Calendar
 
 class MainFragment : Fragment() {
 
@@ -63,7 +70,28 @@ class MainFragment : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        val today = LocalDate.now()
+        val filter: (Asteroid) -> Boolean =
+            when(item.itemId){
+                R.id.show_today_menu -> {asteroid ->
+                    LocalDate.parse(asteroid.closeApproachDate).isEqual(today)
+                }
+                R.id.show_week_menu -> { asteroid ->
+                    LocalDate.parse(asteroid.closeApproachDate).isAfter(today) && LocalDate.parse(
+                        asteroid.closeApproachDate
+                    ).isBefore(today.plusDays(8))
+                }
+                R.id.show_past_menu -> {asteroid ->
+                    LocalDate.parse(asteroid.closeApproachDate).isBefore(today)
+                }
+                else -> {asteroid -> true}
+            }
+
+        viewModel.updateFilter(filter = filter)
         return true
     }
 }

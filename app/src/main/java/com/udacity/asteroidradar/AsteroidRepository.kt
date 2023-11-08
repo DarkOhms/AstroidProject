@@ -2,7 +2,9 @@ package com.udacity.asteroidradar
 
 import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import com.udacity.asteroidradar.Database.AsteroidDatabase
 import com.udacity.asteroidradar.Database.DatabaseAsteroid
 import com.udacity.asteroidradar.Database.asDomainModel
@@ -18,9 +20,21 @@ class AsteroidRepository(private val db:AsteroidDatabase){
 
 
     val asteroids: LiveData<List<Asteroid>> = db.asteroidDao.getAsteroids().map { it.asDomainModel() }
+    val filterLiveData: MutableLiveData<(Asteroid) -> Boolean> = MutableLiveData{true}
+
+    val filteredAsteroids: LiveData<List<Asteroid>> = filterLiveData.switchMap {filter ->
+
+        asteroids.map {asteroidList ->
+            asteroidList.filter{asteroid -> filter.invoke(asteroid)}
+        }
+    }
 
     val pictureOfTheDay : LiveData<PictureOfDay> = db.pictureOfDayDao.getPictureOfDay().map { it.asDomainModel() }
 
+    //This function takes a lambda function using an Asteroid and passes it to our filterLiveData
+    fun updateFilter(newFilter: (Asteroid) -> Boolean){
+        filterLiveData.value = newFilter
+    }
     suspend fun networkRefresh (){
         withContext(IO) {
             try {

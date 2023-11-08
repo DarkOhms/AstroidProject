@@ -13,7 +13,8 @@ import java.util.Calendar.*
 
 class MainViewModel(repository: AsteroidRepository) : ViewModel() {
 
-    private val _asteroids by lazy { repository.asteroids }
+    private val repository = repository
+    val _asteroids by lazy { repository.filteredAsteroids }
 
     val asteroids : LiveData<List<Asteroid>>
         get() = _asteroids
@@ -35,6 +36,8 @@ class MainViewModel(repository: AsteroidRepository) : ViewModel() {
 
     init {
         _navigate.value = false
+        //this will show all asteroids in the db
+        repository.filterLiveData.value = {true}
         //whenever the view model is created, the network refresh will update the database
         //it will also trigger the repository to get the picture of the day from the network
         viewModelScope.launch { repository.getNetworkPictureOfTheDay()}
@@ -58,6 +61,11 @@ class MainViewModel(repository: AsteroidRepository) : ViewModel() {
     }
     fun doneNavigating(){
         _navigate.value = false
+    }
+
+    fun updateFilter(filter:(Asteroid) -> Boolean){
+        repository.updateFilter(filter)
+
     }
 
 }
