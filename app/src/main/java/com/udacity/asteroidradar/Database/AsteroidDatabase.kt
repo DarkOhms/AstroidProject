@@ -16,6 +16,7 @@ import com.udacity.asteroidradar.asDatabaseModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Dao
 interface AsteroidDao{
@@ -98,13 +99,14 @@ abstract class AsteroidDatabase: RoomDatabase() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
 
-            INSTANCE?.let { database ->
-                scope.launch(Dispatchers.IO) {
-                    populateDatabase(database.pictureOfDayDao)
+            runBlocking {
+                INSTANCE?.let { database ->
+                    scope.launch(Dispatchers.IO) {
+                        populateDatabase(database.pictureOfDayDao)
+                    }
+
                 }
-
             }
-
         }
 
         /**
