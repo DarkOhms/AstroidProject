@@ -29,9 +29,9 @@ class MainViewModel(repository: AsteroidRepository) : ViewModel() {
     val selectedAsteroid: LiveData<Asteroid>
         get() = _selectedAsteroid
 
-    private val _pictureOfTheDay by lazy{ repository.pictureOfTheDay}
+    private val _pictureOfTheDay : LiveData<PictureOfDay?> = repository.pictureOfDay
 
-    val pictureOfTheDay : LiveData<PictureOfDay>
+    val pictureOfTheDay : LiveData<PictureOfDay?>
         get() = _pictureOfTheDay
 
     init {
@@ -41,7 +41,7 @@ class MainViewModel(repository: AsteroidRepository) : ViewModel() {
         //whenever the view model is created, the network refresh will update the database
         //it will also trigger the repository to get the picture of the day from the network
         viewModelScope.launch { repository.getNetworkPictureOfTheDay()}
-        viewModelScope.launch {  repository.networkRefresh()}
+        viewModelScope.launch { repository.networkRefresh()}
 
     }
 

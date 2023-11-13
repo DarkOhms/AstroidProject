@@ -15,6 +15,11 @@ data class DatabasePictureOfDay(
     val url: String){
 
     fun asDomainModel(): PictureOfDay{
+        if(this.id == null){
+           return PictureOfDay("image",
+            "default image",
+            "https://api.nasa.gov/assets/img/hero.png")
+        }
         return PictureOfDay(
             mediaType = this.mediaType,
             title = this.title,

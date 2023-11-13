@@ -58,3 +58,58 @@ private fun getNextSevenDaysFormattedDates(): ArrayList<String> {
 
     return formattedDateList
 }
+
+private fun getTodayAndPastSevenDaysFormattedDates(): ArrayList<String> {
+    val formattedDateList = ArrayList<String>()
+
+    val calendar = Calendar.getInstance()
+    val dateFormat = SimpleDateFormat(Constants.API_QUERY_DATE_FORMAT, Locale.getDefault())
+
+    // Add today's date
+    formattedDateList.add(dateFormat.format(calendar.time))
+
+    // Subtract 6 days from today to get the past 6 days
+    for (i in 1..Constants.DEFAULT_END_DATE_DAYS) {
+        calendar.add(Calendar.DAY_OF_YEAR, -1)
+        formattedDateList.add(dateFormat.format(calendar.time))
+    }
+
+    return formattedDateList
+}
+
+fun parseAsteroidsJsonResultForPast(jsonResult: JSONObject): ArrayList<DatabaseAsteroid> {
+    val nearEarthObjectsJson = jsonResult.getJSONObject("near_earth_objects")
+
+    val asteroidList = ArrayList<DatabaseAsteroid>()
+
+    val nextSevenDaysFormattedDates = getTodayAndPastSevenDaysFormattedDates()
+    for (formattedDate in nextSevenDaysFormattedDates) {
+        if (nearEarthObjectsJson.has(formattedDate)) {
+            val dateAsteroidJsonArray = nearEarthObjectsJson.getJSONArray(formattedDate)
+
+            for (i in 0 until dateAsteroidJsonArray.length()) {
+                val asteroidJson = dateAsteroidJsonArray.getJSONObject(i)
+                val id = asteroidJson.getLong("id")
+                val codename = asteroidJson.getString("name")
+                val absoluteMagnitude = asteroidJson.getDouble("absolute_magnitude_h")
+                val estimatedDiameter = asteroidJson.getJSONObject("estimated_diameter")
+                    .getJSONObject("kilometers").getDouble("estimated_diameter_max")
+
+                val closeApproachData = asteroidJson
+                    .getJSONArray("close_approach_data").getJSONObject(0)
+                val relativeVelocity = closeApproachData.getJSONObject("relative_velocity")
+                    .getDouble("kilometers_per_second")
+                val distanceFromEarth = closeApproachData.getJSONObject("miss_distance")
+                    .getDouble("astronomical")
+                val isPotentiallyHazardous = asteroidJson
+                    .getBoolean("is_potentially_hazardous_asteroid")
+
+                val asteroid = DatabaseAsteroid(id, codename, formattedDate, absoluteMagnitude,
+                    estimatedDiameter, relativeVelocity, distanceFromEarth, isPotentiallyHazardous)
+                asteroidList.add(asteroid)
+            }
+        }
+    }
+
+    return asteroidList
+}
